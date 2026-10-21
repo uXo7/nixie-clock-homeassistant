@@ -70,7 +70,3 @@ bonded peers), little-endian integers.
 uv venv && uv pip install -r requirements_test.txt
 pytest -q && ruff check . && ruff format --check .
 ```
-
-Replace `OWNER` in `manifest.json` with your GitHub account.
-
-`esphome/bt-proxy-living-room.yaml` is a Bluetooth proxy for an M5Stack AtomS3 Lite.
