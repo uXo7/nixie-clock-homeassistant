@@ -1,0 +1,67 @@
+# Bluetooth proxy on M5Stack AtomS3 Lite (ESP32-S3, 8 MB flash).
+# Place it in the open, roughly between the nixie clock and the plants,
+# NOT in the cabinet next to the NUC / Evohome / Netatmo radios.
+#
+# Secrets (secrets.yaml in the ESPHome dashboard):
+#   wifi_iot_ssid, wifi_iot_password  -> DaMi-IoT
+#   bt_proxy_api_key                  -> `openssl rand -base64 32`
+#   bt_proxy_ota_password
+
+substitutions:
+  name: bt-proxy-living-room
+  friendly_name: BT proxy living room
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2025.8.0
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: !secret bt_proxy_api_key
+
+ota:
+  - platform: esphome
+    password: !secret bt_proxy_ota_password
+
+wifi:
+  ssid: !secret wifi_iot_ssid
+  password: !secret wifi_iot_password
+  # Do not set power_save_mode: none - WiFi/BLE coexistence on ESP32 needs modem sleep.
+  ap: {}
+
+captive_portal:
+
+# Continuous active scanning, the standard setting for ESP-IDF proxies.
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+    interval: 1100ms
+    window: 1100ms
+
+# active: true = HA can open GATT connections through the proxy (needed for the clock).
+bluetooth_proxy:
+  active: true
+
+button:
+  - platform: restart
+    name: Restart
+  - platform: safe_mode
+    name: Safe mode boot
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi signal
+    update_interval: 60s
+  - platform: uptime
+    name: Uptime
+    update_interval: 300s

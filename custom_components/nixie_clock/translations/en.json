@@ -1,0 +1,66 @@
+{
+  "config": {
+    "flow_title": "{name} ({address})",
+    "step": {
+      "user": {
+        "description": "Select the clock. It must be powered and not connected to the phone app.",
+        "data": { "address": "Device" }
+      },
+      "bluetooth_confirm": {
+        "description": "Set up {name} ({address}, signal {rssi} dBm)? Close the phone app first - the clock accepts one connection at a time."
+      }
+    },
+    "abort": {
+      "already_configured": "Device is already configured",
+      "no_devices_found": "No Nixie Clock found. Check that it is powered and in range of a Bluetooth adapter or proxy.",
+      "not_supported": "Device not supported"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": { "sync_interval_hours": "Sync interval" },
+        "data_description": {
+          "sync_interval_hours": "How often the clock is set to Home Assistant's time. DST changes and failed syncs are handled hourly regardless."
+        }
+      }
+    }
+  },
+  "entity": {
+    "button": { "sync_time": { "name": "Sync time" } },
+    "sensor": {
+      "drift": { "name": "Drift" },
+      "last_sync": { "name": "Last sync" },
+      "signal_strength": { "name": "Signal strength" }
+    },
+    "switch": {
+      "night_mode": { "name": "Night mode" },
+      "nixie_dots": { "name": "Nixie dots" }
+    },
+    "select": {
+      "hourglass": {
+        "name": "Hourglass interval",
+        "state": {
+          "1_min": "Every minute",
+          "10_min": "Every 10 minutes",
+          "30_min": "Every 30 minutes",
+          "60_min": "Every hour",
+          "3_am": "Daily at 3:00"
+        }
+      },
+      "time_format": {
+        "name": "Time format",
+        "state": { "24h": "24 h", "12h": "12 h" }
+      }
+    },
+    "time": {
+      "night_mode_start": { "name": "Night mode start" },
+      "night_mode_end": { "name": "Night mode end" }
+    }
+  },
+  "exceptions": {
+    "not_in_range": { "message": "Nixie Clock {address} is not in range of any connectable Bluetooth adapter or proxy." },
+    "write_failed": { "message": "Writing to the clock failed: {error}" },
+    "sync_failed": { "message": "Time sync failed: {error}" }
+  }
+}
