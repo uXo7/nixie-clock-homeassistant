@@ -1,0 +1,21 @@
+{
+  "entity": {
+    "button": { "sync_time": { "default": "mdi:clock-check-outline" } },
+    "sensor": {
+      "drift": { "default": "mdi:timer-sand" },
+      "last_sync": { "default": "mdi:clock-check" }
+    },
+    "switch": {
+      "night_mode": { "default": "mdi:weather-night" },
+      "nixie_dots": { "default": "mdi:dots-horizontal" }
+    },
+    "select": {
+      "hourglass": { "default": "mdi:timer-sand-complete" },
+      "time_format": { "default": "mdi:hours-24" }
+    },
+    "time": {
+      "night_mode_start": { "default": "mdi:weather-night" },
+      "night_mode_end": { "default": "mdi:weather-sunny" }
+    }
+  }
+}
