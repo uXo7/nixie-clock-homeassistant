@@ -55,7 +55,9 @@ class NixieClockCoordinator(DataUpdateCoordinator[NixieClockState]):
         )
         self.client = client
         self._lock = asyncio.Lock()
-        self._last_advertisement_retry = 0.0
+        # None = never retried. Not 0.0: time.monotonic() counts from host boot, so on a
+        # freshly booted host 'now - 0.0' would still be inside the cooldown.
+        self._last_advertisement_retry: float | None = None
 
     @property
     def needs_sync(self) -> bool:
@@ -141,7 +143,8 @@ class NixieClockCoordinator(DataUpdateCoordinator[NixieClockState]):
             if not self.needs_sync or self._lock.locked():
                 return
             now = time.monotonic()
-            if now - self._last_advertisement_retry < ADVERTISEMENT_RETRY_COOLDOWN_S:
+            last = self._last_advertisement_retry
+            if last is not None and now - last < ADVERTISEMENT_RETRY_COOLDOWN_S:
                 return
             self._last_advertisement_retry = now
             self._async_schedule_refresh(f"advertisement seen (rssi {service_info.rssi})")
