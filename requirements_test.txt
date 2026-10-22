@@ -1,2 +1,18 @@
-pytest-homeassistant-custom-component
-ruff
+# Pinned to one Home Assistant release so CI is reproducible. Bump together:
+# pytest-homeassistant-custom-component X pins homeassistant Y; the bluetooth
+# requirements below are copied from Y's bluetooth + usb manifests (pytest-hacc
+# does not install requirements of the HA components an integration depends on).
+pytest-homeassistant-custom-component==0.13.316
+ruff==0.14.0
+
+# homeassistant/components/bluetooth/manifest.json
+bleak==2.1.1
+bleak-retry-connector==4.4.3
+bluetooth-adapters==2.1.0
+bluetooth-auto-recovery==1.5.3
+bluetooth-data-tools==1.28.4
+dbus-fast==3.1.2
+habluetooth==5.8.0
+# homeassistant/components/usb/manifest.json
+aiousbwatcher==1.1.1
+pyserial==3.5
