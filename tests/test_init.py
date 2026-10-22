@@ -78,7 +78,7 @@ async def test_unreachable_clock_does_not_block_setup(
 
     # The clock advertises again -> immediate sync (setup armed a cooldown, so skip it).
     coordinator = config_entry.runtime_data
-    coordinator._last_advertisement_retry = 0.0
+    coordinator._last_advertisement_retry = None
     seen = fake_bluetooth_stack.register_callback.call_args.args[1]
     sync = AsyncMock(return_value=clock_state)
     with patch(SYNC, sync):
@@ -87,7 +87,7 @@ async def test_unreachable_clock_does_not_block_setup(
         assert sync.await_count == 1
         assert hass.states.get(_eid(hass, "sensor", "drift")).state == "-37.5"
         # Healthy now -> further advertisements are ignored.
-        coordinator._last_advertisement_retry = 0.0
+        coordinator._last_advertisement_retry = None
         seen(MagicMock(rssi=-80), None)
         await hass.async_block_till_done()
         assert sync.await_count == 1
