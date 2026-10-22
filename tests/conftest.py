@@ -33,16 +33,42 @@ def fake_bluetooth_stack(hass: HomeAssistant) -> Generator[MagicMock]:
             return_value=ble_device,
         ),
         patch(
-            "custom_components.nixie_clock.client.bluetooth.async_last_service_info",
-            return_value=MagicMock(rssi=-82),
+            "homeassistant.components.bluetooth.async_last_service_info",
+            return_value=MagicMock(rssi=-82, source="0C:7A:15:89:A1:65"),
         ),
         patch(
-            "custom_components.nixie_clock.coordinator.bluetooth.async_register_callback",
+            "homeassistant.components.bluetooth.async_register_callback",
             return_value=lambda: None,
         ) as register,
+        patch(
+            "homeassistant.components.bluetooth.async_track_unavailable",
+            return_value=lambda: None,
+        ) as track_unavailable,
+        patch(
+            "homeassistant.components.bluetooth.async_scanner_by_source",
+            side_effect=_fake_scanner,
+        ),
     ):
         ble_device.register_callback = register
+        ble_device.track_unavailable = track_unavailable
         yield ble_device
+
+
+def _fake_scanner(hass: HomeAssistant, source: str) -> MagicMock:
+    scanner = MagicMock()
+    scanner.name = {"0C:7A:15:89:A1:65": "hci0", "24:58:7C:5C:7A:E2": "bt-proxy"}.get(
+        source, source
+    )
+    return scanner
+
+
+def registered_callback(register: MagicMock, owner: str):
+    """The advertisement callback registered by `owner` (class name), e.g. the coordinator."""
+    for call in register.call_args_list:
+        cb = call.args[1]
+        if type(getattr(cb, "__self__", None)).__name__ == owner or owner in cb.__qualname__:
+            return cb
+    raise AssertionError(f"no callback registered by {owner}")
 
 
 @pytest.fixture

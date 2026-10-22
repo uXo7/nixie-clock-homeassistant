@@ -33,7 +33,7 @@ Supported: **Nixie Clock** with firmware 1.17. Nixie Alarm-Clock, Radio and Itro
 | Sync time | button | Always available, also to recover from a failed sync |
 | Drift | sensor (s) | Clock minus real time, measured right before each sync. Positive = clock ahead |
 | Last sync | sensor (timestamp) | diagnostic |
-| Signal strength | sensor (dBm) | diagnostic; RSSI of the best adapter/proxy |
+| Signal strength | sensor (dBm) | diagnostic; live RSSI from advertisements (max. 1 update/min), `source` attribute names the adapter/proxy HA would connect through |
 | Night mode | switch | Tubes off in the time window |
 | Night mode start / end | time | `raw_value` attribute holds the stored local-epoch value |
 | Nixie dots | switch | |
