@@ -17,7 +17,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
-from .conftest import ADDRESS
+from .conftest import ADDRESS, registered_callback
 
 SYNC = "custom_components.nixie_clock.client.NixieClockClient.async_read_and_sync"
 WRITE = "custom_components.nixie_clock.client.NixieClockClient.async_write"
@@ -79,7 +79,7 @@ async def test_unreachable_clock_does_not_block_setup(
     # The clock advertises again -> immediate sync (setup armed a cooldown, so skip it).
     coordinator = config_entry.runtime_data
     coordinator._last_advertisement_retry = None
-    seen = fake_bluetooth_stack.register_callback.call_args.args[1]
+    seen = registered_callback(fake_bluetooth_stack.register_callback, "NixieClockCoordinator")
     sync = AsyncMock(return_value=clock_state)
     with patch(SYNC, sync):
         seen(MagicMock(rssi=-80), None)
@@ -235,3 +235,46 @@ async def test_hourly_retry_after_failure(
         await hass.async_block_till_done()
     assert sync.await_count == 1
     assert coordinator.last_update_success
+
+
+async def test_signal_strength_follows_advertisements(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    clock_state: NixieClockState,
+    fake_bluetooth_stack: MagicMock,
+) -> None:
+    from custom_components.nixie_clock.client import NixieClockError
+
+    await _setup(hass, config_entry, clock_state)
+    eid = _eid(hass, "sensor", "signal_strength")
+    state = hass.states.get(eid)
+    assert state.state == "-82"
+    assert state.attributes["source"] == "hci0"
+
+    seen = registered_callback(fake_bluetooth_stack.register_callback, "NixieClockSignalSensor")
+    gone = fake_bluetooth_stack.track_unavailable.call_args.args[1]
+    clock = "custom_components.nixie_clock.sensor.time.monotonic"
+
+    with patch(clock, return_value=1000.0):
+        # Better adapter takes over -> written immediately.
+        seen(MagicMock(rssi=-54, source="24:58:7C:5C:7A:E2"), None)
+    assert hass.states.get(eid).state == "-54"
+    assert hass.states.get(eid).attributes["source"] == "bt-proxy"
+
+    with patch(clock, return_value=1030.0):
+        seen(MagicMock(rssi=-57, source="24:58:7C:5C:7A:E2"), None)  # throttled
+    assert hass.states.get(eid).state == "-54"
+    with patch(clock, return_value=1061.0):
+        seen(MagicMock(rssi=-57, source="24:58:7C:5C:7A:E2"), None)
+    assert hass.states.get(eid).state == "-57"
+
+    # A failed sync does not make the live signal unavailable.
+    with patch(SYNC, AsyncMock(side_effect=NixieClockError("busy"))):
+        await config_entry.runtime_data.async_refresh()
+    assert hass.states.get(eid).state == "-57"
+
+    gone(MagicMock())
+    assert hass.states.get(eid).state == "unavailable"
+    with patch(clock, return_value=1070.0):
+        seen(MagicMock(rssi=-60, source="24:58:7C:5C:7A:E2"), None)  # back -> immediate
+    assert hass.states.get(eid).state == "-60"

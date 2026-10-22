@@ -20,3 +20,7 @@ MAX_CONNECT_ATTEMPTS: Final = 4
 
 # After a failed sync, retry when the clock advertises again, at most this often.
 ADVERTISEMENT_RETRY_COOLDOWN_S: Final = 120
+
+# Signal strength sensor: at most one state write per this interval (source changes
+# and availability changes are written immediately).
+RSSI_MIN_UPDATE_INTERVAL_S: Final = 60
