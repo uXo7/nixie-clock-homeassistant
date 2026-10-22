@@ -13,9 +13,16 @@ Supported: **Nixie Clock** with firmware 1.17. Nixie Alarm-Clock, Radio and Itro
   and with ESPHome Bluetooth proxies (`bluetooth_proxy: active: true`).
 - **Connect on demand**: every operation opens a short GATT connection and closes it. The clock
   accepts one connection at a time - close the phone app, otherwise HA cannot connect.
-- Every refresh = read all settings + measure drift + set time (aligned to a full second).
-- Refresh triggers: setup / HA restart, the sync interval (default 24 h), the *Sync time* button,
-  and an hourly check that resyncs when the UTC offset changed (DST) or the last sync failed.
+- Every refresh = measure drift + set time (aligned to a full second) first, then read the
+  settings. If the link drops after the time write, the sync counts and the previous settings
+  are kept.
+- Refresh triggers: setup / HA restart (in the background, never blocks startup), the sync
+  interval (default 24 h), the *Sync time* button, an hourly check that resyncs when the UTC
+  offset changed (DST) or the last sync failed, and - after a failure - the next advertisement
+  of the clock (at most every 2 min).
+- **The clock stops advertising while anything is connected to it** (phone/tablet app). HA then
+  cannot reach it; the integration stays loaded with unavailable entities and resyncs as soon
+  as the clock is heard again.
 - The clock stores **local** time (unix seconds + UTC offset) and knows nothing about DST,
   hence the hourly offset check.
 

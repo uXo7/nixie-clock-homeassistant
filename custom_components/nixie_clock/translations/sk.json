@@ -4,7 +4,9 @@
     "step": {
       "user": {
         "description": "Vyber hodiny. Musia byť zapnuté a nesmú byť pripojené k aplikácii v telefóne.",
-        "data": { "address": "Zariadenie" }
+        "data": {
+          "address": "Zariadenie"
+        }
       },
       "bluetooth_confirm": {
         "description": "Pridať {name} ({address}, signál {rssi} dBm)? Najprv zatvor aplikáciu v telefóne – hodiny prijmú naraz len jedno pripojenie."
@@ -19,7 +21,9 @@
   "options": {
     "step": {
       "init": {
-        "data": { "sync_interval_hours": "Interval synchronizácie" },
+        "data": {
+          "sync_interval_hours": "Interval synchronizácie"
+        },
         "data_description": {
           "sync_interval_hours": "Ako často sa na hodinách nastaví čas z Home Assistanta. Zmena letného času a neúspešné synchronizácie sa riešia každú hodinu bez ohľadu na toto nastavenie."
         }
@@ -27,15 +31,29 @@
     }
   },
   "entity": {
-    "button": { "sync_time": { "name": "Synchronizovať čas" } },
+    "button": {
+      "sync_time": {
+        "name": "Synchronizovať čas"
+      }
+    },
     "sensor": {
-      "drift": { "name": "Odchýlka" },
-      "last_sync": { "name": "Posledná synchronizácia" },
-      "signal_strength": { "name": "Sila signálu" }
+      "drift": {
+        "name": "Odchýlka"
+      },
+      "last_sync": {
+        "name": "Posledná synchronizácia"
+      },
+      "signal_strength": {
+        "name": "Sila signálu"
+      }
     },
     "switch": {
-      "night_mode": { "name": "Nočný režim" },
-      "nixie_dots": { "name": "Nixie bodky" }
+      "night_mode": {
+        "name": "Nočný režim"
+      },
+      "nixie_dots": {
+        "name": "Nixie bodky"
+      }
     },
     "select": {
       "hourglass": {
@@ -50,17 +68,27 @@
       },
       "time_format": {
         "name": "Formát času",
-        "state": { "24h": "24 h", "12h": "12 h" }
+        "state": {
+          "24h": "24 h",
+          "12h": "12 h"
+        }
       }
     },
     "time": {
-      "night_mode_start": { "name": "Začiatok nočného režimu" },
-      "night_mode_end": { "name": "Koniec nočného režimu" }
+      "night_mode_start": {
+        "name": "Začiatok nočného režimu"
+      },
+      "night_mode_end": {
+        "name": "Koniec nočného režimu"
+      }
     }
   },
   "exceptions": {
-    "not_in_range": { "message": "Nixie Clock {address} nie je v dosahu žiadneho Bluetooth adaptéra ani proxy." },
-    "write_failed": { "message": "Zápis do hodín zlyhal: {error}" },
-    "sync_failed": { "message": "Synchronizácia času zlyhala: {error}" }
+    "write_failed": {
+      "message": "Zápis do hodín zlyhal: {error}"
+    },
+    "sync_failed": {
+      "message": "Synchronizácia času zlyhala: {error}"
+    }
   }
 }
