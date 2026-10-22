@@ -83,3 +83,34 @@ async def test_gatt_error_is_wrapped(hass: HomeAssistant) -> None:
     ):
         await NixieClockClient(hass, ADDRESS).async_read_and_sync()
     fake.disconnect.assert_awaited_once()
+
+
+async def test_settings_failure_after_sync_keeps_sync(hass: HomeAssistant) -> None:
+    from bleak.exc import BleakError
+
+    await hass.config.async_set_time_zone("Europe/Bratislava")
+    fake = _fake_client(
+        {protocol.CHAR_DATETIME: b"\x00\x00\x00\x00", protocol.CHAR_HOURGLASS: b"\x01"}
+    )
+    calls: list[str] = []
+
+    async def read(uuid: str) -> bytearray:
+        calls.append(uuid)
+        if uuid == protocol.CHAR_DATETIME:
+            return bytearray(protocol.encode_u32(1_792_607_200))
+        raise BleakError("link lost")
+
+    fake.read_gatt_char.side_effect = read
+    with (
+        patch(
+            "custom_components.nixie_clock.client.establish_connection",
+            AsyncMock(return_value=fake),
+        ),
+        patch("custom_components.nixie_clock.client.asyncio.sleep", AsyncMock()),
+    ):
+        state = await NixieClockClient(hass, ADDRESS).async_read_and_sync()
+
+    fake.write_gatt_char.assert_awaited_once()  # time was written before settings reads
+    assert calls[0] == protocol.CHAR_DATETIME
+    assert state.last_sync is not None
+    assert state.settings_valid is False

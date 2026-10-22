@@ -53,6 +53,24 @@ class NixieClockState:
     drift_s: float | None = None
     last_sync: datetime | None = None
     synced_utc_offset_s: int | None = None
+    # False when the time sync succeeded but reading the settings afterwards did not.
+    settings_valid: bool = True
+
+    def with_settings_from(self, other: NixieClockState | None) -> NixieClockState:
+        """Carry the settings over from a previous snapshot (after a partial read)."""
+        if other is None:
+            return self
+        return replace(
+            self,
+            firmware=other.firmware,
+            time_format=other.time_format,
+            hourglass=other.hourglass,
+            night_mode=other.night_mode,
+            night_mode_start_raw=other.night_mode_start_raw,
+            night_mode_end_raw=other.night_mode_end_raw,
+            nixie_dots=other.nixie_dots,
+            settings_valid=other.settings_valid,
+        )
 
     def with_sync_from(self, other: NixieClockState | None) -> NixieClockState:
         """Carry the sync-related fields over from a previous snapshot."""
@@ -125,8 +143,10 @@ class NixieClockClient:
             return None
         return await client.read_gatt_char(char)
 
-    async def _read_state(self, client: BleakClientWithServiceCache) -> NixieClockState:
-        state = NixieClockState(rssi=self._rssi())
+    async def _read_state(
+        self, client: BleakClientWithServiceCache, state: NixieClockState | None = None
+    ) -> NixieClockState:
+        state = state or NixieClockState(rssi=self._rssi())
         if (raw := await self._read(client, protocol.CHAR_FIRMWARE_REVISION)) is not None:
             state.firmware = protocol.parse_firmware(raw)
         if (raw := await self._read(client, protocol.CHAR_TIME_FORMAT)) is not None:
@@ -144,9 +164,13 @@ class NixieClockClient:
         return state
 
     async def async_read_and_sync(self) -> NixieClockState:
-        """Read all settings, measure drift, then set the clock to HA's time."""
+        """Set the clock to HA's time first, then read the settings.
+
+        The link is marginal (~-80 dBm), so the important part runs first while the
+        connection is fresh. A failure while reading settings afterwards keeps the sync.
+        """
         async with self._session() as client:
-            state = await self._read_state(client)
+            state = NixieClockState(rssi=self._rssi())
 
             if client.services.get_characteristic(protocol.CHAR_DATETIME) is None:
                 raise NixieClockError("Date/time characteristic not found (unsupported firmware?)")
@@ -172,13 +196,20 @@ class NixieClockClient:
             state.last_sync = dt_util.utcnow()
             state.synced_utc_offset_s = offset
 
+            try:
+                await self._read_state(client, state)
+            except (BleakError, TimeoutError, ValueError) as err:
+                _LOGGER.debug("Time synced but settings read failed on %s: %s", self._address, err)
+                state.settings_valid = False
+
         _LOGGER.debug(
-            "Synced %s: drift %.1f s, offset %d s, fw %s, rssi %s",
+            "Synced %s: drift %.1f s, offset %d s, fw %s, rssi %s, settings %s",
             self._address,
             state.drift_s,
             offset,
             state.firmware,
             state.rssi,
+            "ok" if state.settings_valid else "stale",
         )
         return state
 

@@ -4,7 +4,9 @@
     "step": {
       "user": {
         "description": "Select the clock. It must be powered and not connected to the phone app.",
-        "data": { "address": "Device" }
+        "data": {
+          "address": "Device"
+        }
       },
       "bluetooth_confirm": {
         "description": "Set up {name} ({address}, signal {rssi} dBm)? Close the phone app first - the clock accepts one connection at a time."
@@ -19,7 +21,9 @@
   "options": {
     "step": {
       "init": {
-        "data": { "sync_interval_hours": "Sync interval" },
+        "data": {
+          "sync_interval_hours": "Sync interval"
+        },
         "data_description": {
           "sync_interval_hours": "How often the clock is set to Home Assistant's time. DST changes and failed syncs are handled hourly regardless."
         }
@@ -27,15 +31,29 @@
     }
   },
   "entity": {
-    "button": { "sync_time": { "name": "Sync time" } },
+    "button": {
+      "sync_time": {
+        "name": "Sync time"
+      }
+    },
     "sensor": {
-      "drift": { "name": "Drift" },
-      "last_sync": { "name": "Last sync" },
-      "signal_strength": { "name": "Signal strength" }
+      "drift": {
+        "name": "Drift"
+      },
+      "last_sync": {
+        "name": "Last sync"
+      },
+      "signal_strength": {
+        "name": "Signal strength"
+      }
     },
     "switch": {
-      "night_mode": { "name": "Night mode" },
-      "nixie_dots": { "name": "Nixie dots" }
+      "night_mode": {
+        "name": "Night mode"
+      },
+      "nixie_dots": {
+        "name": "Nixie dots"
+      }
     },
     "select": {
       "hourglass": {
@@ -50,17 +68,27 @@
       },
       "time_format": {
         "name": "Time format",
-        "state": { "24h": "24 h", "12h": "12 h" }
+        "state": {
+          "24h": "24 h",
+          "12h": "12 h"
+        }
       }
     },
     "time": {
-      "night_mode_start": { "name": "Night mode start" },
-      "night_mode_end": { "name": "Night mode end" }
+      "night_mode_start": {
+        "name": "Night mode start"
+      },
+      "night_mode_end": {
+        "name": "Night mode end"
+      }
     }
   },
   "exceptions": {
-    "not_in_range": { "message": "Nixie Clock {address} is not in range of any connectable Bluetooth adapter or proxy." },
-    "write_failed": { "message": "Writing to the clock failed: {error}" },
-    "sync_failed": { "message": "Time sync failed: {error}" }
+    "write_failed": {
+      "message": "Writing to the clock failed: {error}"
+    },
+    "sync_failed": {
+      "message": "Time sync failed: {error}"
+    }
   }
 }

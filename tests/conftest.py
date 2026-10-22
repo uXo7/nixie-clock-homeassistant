@@ -29,10 +29,6 @@ def fake_bluetooth_stack(hass: HomeAssistant) -> Generator[MagicMock]:
     ble_device.name = "Nixie Clock"
     with (
         patch(
-            "custom_components.nixie_clock.bluetooth.async_ble_device_from_address",
-            return_value=ble_device,
-        ),
-        patch(
             "custom_components.nixie_clock.client.bluetooth.async_ble_device_from_address",
             return_value=ble_device,
         ),
@@ -40,7 +36,12 @@ def fake_bluetooth_stack(hass: HomeAssistant) -> Generator[MagicMock]:
             "custom_components.nixie_clock.client.bluetooth.async_last_service_info",
             return_value=MagicMock(rssi=-82),
         ),
+        patch(
+            "custom_components.nixie_clock.coordinator.bluetooth.async_register_callback",
+            return_value=lambda: None,
+        ) as register,
     ):
+        ble_device.register_callback = register
         yield ble_device
 
 

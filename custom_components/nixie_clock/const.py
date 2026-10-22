@@ -17,3 +17,6 @@ MAX_SYNC_INTERVAL_HOURS: Final = 168
 
 # Connection attempts per operation; the clock is a weak BLE peripheral.
 MAX_CONNECT_ATTEMPTS: Final = 4
+
+# After a failed sync, retry when the clock advertises again, at most this often.
+ADVERTISEMENT_RETRY_COOLDOWN_S: Final = 120
